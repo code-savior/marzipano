@@ -82,6 +82,9 @@ function Hotspot(domElement, parentDomElement, view, coords, opts) {
 
   // The current calculated screen position.
   this._position = { x: 0, y: 0 };
+
+  // is Mask flag default false
+  this._isMask = false;
 }
 
 eventEmitter(Hotspot);
@@ -214,7 +217,7 @@ Hotspot.prototype._update = function() {
 
 Hotspot.prototype._setEmbeddedPosition = function(view, params) {
   var transform = view.coordinatesToPerspectiveTransform(
-      params, this._perspective.radius, this._perspective.extraTransforms);
+      params, this._perspective.radius, this._perspective.extraTransforms, this._isMask);
   setTransform(this._domElement, transform);
 };
 

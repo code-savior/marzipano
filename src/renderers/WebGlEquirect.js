@@ -98,8 +98,8 @@ WebGlEquirectRenderer.prototype.startLayer = function(layer, rect) {
   gl.bindBuffer(gl.ARRAY_BUFFER, constantBuffers.textureCoords);
 
   // Compute and set the inverse projection matrix.
-  mat4.copy(invProjMatrix, layer.view().projection());
-  mat4.invert(invProjMatrix, invProjMatrix);
+  mat4.copy(invProjMatrix, layer.view().inverseProjection());
+  // mat4.invert(invProjMatrix, invProjMatrix);
 
   gl.uniformMatrix4fv(shaderProgram.uInvProjMatrix, false, invProjMatrix);
 

@@ -16,8 +16,8 @@
   "scripts": {
     "test": "testem ci",
     "livetest": "testem",
-    "dev": "scripts/dev",
-    "release": "scripts/release",
+    "dev": "sh scripts/dev",
+    "release": "sh scripts/release",
     "deploy": "scripts/deploy",
     "prepublishOnly": "scripts/prepublish"
   },

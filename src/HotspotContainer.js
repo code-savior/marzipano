@@ -152,11 +152,12 @@ HotspotContainer.prototype.rect = function() {
  *     the {@link Hotspot} constructor.
  * @return {Hotspot}
  */
-HotspotContainer.prototype.createHotspot = function(domElement, coords, opts) {
+HotspotContainer.prototype.createHotspot = function(domElement, coords, opts, isMask = false) {
   coords = coords || {};
 
   var hotspot = new Hotspot(
       domElement, this._hotspotContainer, this._view, coords, opts);
+  hotspot._isMask = isMask
   this._hotspots.push(hotspot);
   hotspot._update();
 

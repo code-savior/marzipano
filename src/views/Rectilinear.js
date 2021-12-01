@@ -112,6 +112,11 @@ function RectilinearView(params, limiter) {
   this._yaw = params && params.yaw != null ? params.yaw : defaultYaw;
   this._pitch = params && params.pitch != null ? params.pitch : defaultPitch;
   this._roll = params && params.roll != null ? params.roll : defaultRoll;
+
+  this._equi_yaw = params && params.equi_yaw != null ? params.equi_yaw : defaultYaw;
+  this._equi_pitch = params && params.equi_pitch != null ? params.equi_pitch : defaultPitch;
+  this._equi_roll = params && params.equi_roll != null ? params.equi_roll : defaultRoll;
+
   this._fov = params && params.fov != null ? params.fov : defaultFov;
   this._width = params && params.width != null ?
     params.width : defaultWidth;
@@ -127,6 +132,12 @@ function RectilinearView(params, limiter) {
 
   // The last calculated projection matrix and its inverse.
   this._projMatrix = mat4.create();
+  this._equiMatrix = mat4.create();
+
+  mat4.rotateZ(this._equiMatrix, this._equiMatrix, this._equi_roll);
+  mat4.rotateX(this._equiMatrix, this._equiMatrix, this._equi_pitch);
+  mat4.rotateY(this._equiMatrix, this._equiMatrix, this._equi_yaw);
+
   this._invProjMatrix = mat4.create();
 
   // The last calculated view frustum.
@@ -654,7 +665,10 @@ RectilinearView.prototype.projection = function() {
  */
 RectilinearView.prototype.inverseProjection = function() {
   this._updateProjection();
-  return this._invProjMatrix;
+  const equiRotateMatrix = mat4.create();
+  mat4.multiply(equiRotateMatrix, this._projMatrix, this._equiMatrix);
+  mat4.invert(equiRotateMatrix, equiRotateMatrix);
+  return equiRotateMatrix;
 };
 
 
@@ -830,7 +844,7 @@ RectilinearView.prototype.screenToCoordinates = function(coords, result) {
  * @return {string} The CSS 3D transform to be applied to the element.
  */
 RectilinearView.prototype.coordinatesToPerspectiveTransform = function(
-    coords, radius, extraTransforms) {
+    coords, radius, extraTransforms, isMask) {
   extraTransforms = extraTransforms || "";
 
   var height = this._height;
@@ -852,7 +866,9 @@ RectilinearView.prototype.coordinatesToPerspectiveTransform = function(
   // Set the camera rotation.
   transform += 'rotateZ(' + decimal(-this._roll) + 'rad) ';
   transform += 'rotateX(' + decimal(-this._pitch) + 'rad) ';
-  transform += 'rotateY(' + decimal(this._yaw) + 'rad) ';
+  if (!isMask) {
+    transform += 'rotateY(' + decimal(this._yaw) + 'rad) ';
+  }
 
   // Set the hotspot rotation.
   transform += 'rotateY(' + decimal(-coords.yaw) + 'rad) ';
