@@ -970,16 +970,17 @@ RectilinearView.limit = {
    * @return {RectilinearViewLimiter}
    */
   hfov: function(min, max) {
-    return function limitHfov(params) {
-      var width = params.width;
-      var height = params.height;
-      if (width > 0 && height > 0) {
-        var vmin = convertFov.htov(min, width, height);
-        var vmax = convertFov.htov(max, width, height);
-        params.fov = clamp(params.fov, vmin, vmax);
-      }
-      return params;
-    };
+    return compose(
+      function limitHfov(params) {
+        var width = params.width;
+        var height = params.height;
+        if (width > 0 && height > 0) {
+          var vmin = convertFov.htov(min, width, height);
+          var vmax = convertFov.htov(max, width, height);
+          params.fov = clamp(params.fov, vmin, vmax);
+        }
+        return params;
+      }, RectilinearView.limit.pitch(-Math.PI/2, Math.PI/2));
   },
 
   /**
