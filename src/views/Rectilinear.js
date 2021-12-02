@@ -655,7 +655,9 @@ RectilinearView.prototype._matrixToFrustum = function(p, f) {
  */
 RectilinearView.prototype.projection = function() {
   this._updateProjection();
-  return this._projMatrix;
+  const equiRotateMatrix = mat4.create();
+  mat4.multiply(equiRotateMatrix, this._projMatrix, this._equiMatrix);
+  return equiRotateMatrix;
 };
 
 
@@ -832,6 +834,22 @@ RectilinearView.prototype.screenToCoordinates = function(coords, result) {
   return result;
 };
 
+function getEulerAnglesFromHeadPos(eulerAngles, headPos) {
+  let pitch = Math.asin(headPos[6]);
+  let yaw;
+  let roll;
+  if(Math.sqrt((1.0 - headPos[6] * headPos[6])) >= 0.009999999776482582) {
+      yaw = Math.atan2((-headPos[2]), headPos[10]);
+      roll = Math.atan2((-headPos[4]), headPos[5]);
+  } else {
+      yaw = 0.0;
+      roll = Math.atan2(headPos[1], headPos[0]);
+  }
+  eulerAngles[0] = pitch;
+  eulerAngles[1] = yaw;
+  eulerAngles[2] = roll;
+}
+
 
 /**
  * Calculate the perspective transform required to position an element with
@@ -844,7 +862,7 @@ RectilinearView.prototype.screenToCoordinates = function(coords, result) {
  * @return {string} The CSS 3D transform to be applied to the element.
  */
 RectilinearView.prototype.coordinatesToPerspectiveTransform = function(
-    coords, radius, extraTransforms, isMask) {
+    coords, radius, extraTransforms, isMask, maskFollowRotate) {
   extraTransforms = extraTransforms || "";
 
   var height = this._height;
@@ -863,11 +881,27 @@ RectilinearView.prototype.coordinatesToPerspectiveTransform = function(
   transform += 'perspective(' + decimal(perspective) + 'px) ';
   transform += 'translateZ(' + decimal(perspective) + 'px) ';
 
+  const eulerArr = [];
+  if(isMask) {
+    eulerArr[0] = this._pitch;
+    eulerArr[1] = this._yaw;
+    eulerArr[2] = this._roll;
+  } else {
+    const tempMatrix = mat4.create();
+    mat4.rotateZ(tempMatrix, tempMatrix, this._roll);
+    mat4.rotateX(tempMatrix, tempMatrix, this._pitch);
+    mat4.rotateY(tempMatrix, tempMatrix, this._yaw);
+  
+    mat4.multiply(tempMatrix, tempMatrix, this._equiMatrix);
+  
+    getEulerAnglesFromHeadPos(eulerArr, tempMatrix);
+  }
+
   // Set the camera rotation.
-  transform += 'rotateZ(' + decimal(-this._roll) + 'rad) ';
-  transform += 'rotateX(' + decimal(-this._pitch) + 'rad) ';
-  if (!isMask) {
-    transform += 'rotateY(' + decimal(this._yaw) + 'rad) ';
+  transform += 'rotateZ(' + decimal(-eulerArr[2]) + 'rad) ';
+  transform += 'rotateX(' + decimal(-eulerArr[0]) + 'rad) ';
+  if (maskFollowRotate) {
+    transform += 'rotateY(' + decimal(eulerArr[1]) + 'rad) ';
   }
 
   // Set the hotspot rotation.

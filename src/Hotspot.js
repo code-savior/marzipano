@@ -85,6 +85,7 @@ function Hotspot(domElement, parentDomElement, view, coords, opts) {
 
   // is Mask flag default false
   this._isMask = false;
+  this._maskFollowRotate = true;
 }
 
 eventEmitter(Hotspot);
@@ -217,7 +218,7 @@ Hotspot.prototype._update = function() {
 
 Hotspot.prototype._setEmbeddedPosition = function(view, params) {
   var transform = view.coordinatesToPerspectiveTransform(
-      params, this._perspective.radius, this._perspective.extraTransforms, this._isMask);
+      params, this._perspective.radius, this._perspective.extraTransforms, this._isMask, this._maskFollowRotate);
   setTransform(this._domElement, transform);
 };
 
