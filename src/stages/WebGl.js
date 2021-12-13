@@ -33,7 +33,7 @@ var browserQuirks = {
   // existing texture from a video element. On most browsers texSubImage2D is
   // faster, but on Chrome the performance degrades significantly. See:
   // https://bugs.chromium.org/p/chromium/issues/detail?id=612542
-  videoUseTexImage2D: browser.chrome
+  videoUseTexImage2D: browser.chrome || browser.iphone
 };
 
 
